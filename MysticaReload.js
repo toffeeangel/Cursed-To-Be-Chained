@@ -1,5 +1,6 @@
 //Mystica: RELOAD
 //A text-based choose-your-own-adventure mystery game wrapped in secrets, some too dangerous to tell...
+// Navigate the city, fight demons and uncover the larger story at play.
 
 // Include readline for player input
 const readline = require('readline-sync');
