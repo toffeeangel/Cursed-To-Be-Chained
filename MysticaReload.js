@@ -1,6 +1,6 @@
 //Mystica: RELOAD
-//A text-based choose-your-own-adventure mystery game wrapped in secrets, some too dangerous to tell...
-// Navigate the city, fight demons and uncover the larger story at play.
+//A short text-based choose-your-own-adventure RPG demonic noir game
+//Navigate the city, fight demons and rescue the Chained Prince of the Shadows in the hopes that he will free you from the curse that binds your soul to this city
 
 // Include readline for player input
 const readline = require('readline-sync');
@@ -10,6 +10,7 @@ let playerName = "";
 let playerHealth = 100;
 let playerCoin = 20; // Starting coins
 let currentLocation = "Miragem City";
+let firstVisit = true;
 let gameRunning = true;
 let inventory = [];
 let weaponDamage = 0; // Will increase to 10 when player gets a sword
@@ -23,9 +24,10 @@ console.log("Welcome to Mystica: RELOAD");
 console.log("Now entering uncharted territory...");
 
 // Welcome the player
-playerName = readline.question("\nWhat is your name, brave adventurer? ");
-console.log("\nWelcome, " + playerName + ".");
+playerName = readline.question("\nRei, was it? Nevermind, not important...");
+console.log("\nWelcome, Rei.");
 console.log("You start with " + playerCoin + " coins.");
+console.log("\nYour quest: rescue the Chained Prince of the Shadows from the tower he's been imprisoned in, and hope that in return he'll free you from the curse that binds your soul to this city.");
 
 // Weapon damage (starts at 0 until player buys a sword)
 console.log("\nStarting weapon damage: " + weaponDamage);
