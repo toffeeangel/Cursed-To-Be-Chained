@@ -1,5 +1,5 @@
 # Mystica-RELOAD
-***Mystica: RELOAD*** is a **short text-based choose-your-own-adventure RPG demonic noir game** set in Miragem City, about a young woman called Rei on a quest to free the Dark Prince from the tower he's been imprisoned in, to get him to free _her_ from the curse that binds her soul to this city.
+***Mystica: RELOAD*** is a **short text-based choose-your-own-adventure RPG demonic noir game** set in Miragem City, about a young woman called Rei on a quest to free the Chained Prince of the Shadows from the tower he's been imprisoned in, to get him to free _her_ from the curse that binds her soul to this city.
 
 ◣━━━━━━━━━━━━━━━◢
 
