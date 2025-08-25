@@ -103,75 +103,101 @@ while(gameRunning) {
         console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
     }
 
-    let choice = readline.question("\nEnter choice (number): ");
-    let choiceNum = parseInt(choice);
+    let validChoice = false;
+    while(!validChoice) {
+        try {
+            let choice = readline.question("\nEnter choice (number): ");
+            if(choice.trim() === "") {
+                throw "Please enter a number.";
+            }
 
-    if(currentLocation === "Miragem City") {
-        if(choiceNum === 1) {
-            currentLocation = "Blacksmith"
-            console.log("\nYou enter the blacksmith's shop.");
-        } else if(choiceNum === 2) {
-            currentLocation = "Upper Districts"
-            console.log("\nYou head to the Upper Districts and spot a mysterious shop shrouded in shadows...");
-        } else if(choiceNum === 3) {
-            currentLocation = "Undergrounds"
-            console.log("You decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
-        } else if (choiceNum === 4) {
-            for(let slot = 1; slot <= 3; slot++) {
-                console.log("Checking item slot " + slot + "...");
+            let choiceNum = parseInt(choice);
+            if(isNaN(choiceNum)) {
+                throw "That's not a number. Please enter a number.";
+            }
+            
+            if(currentLocation === "Miragem City") {
+                if(choiceNum < 1 || choiceNum > 6) {
+                    throw "Please enter a number between 1 and 6.";
+                }
 
-                if(slot === 1 && hasWeapon) {
-                    console.log("Found: Sword");
-                } else if (slot === 2 && hasPotion) {
-                    console.log("Found: Life Potion");
-                } else if (slot === 3 && hasCross) {
-                    console.log("Found: Cross");
+                validChoice = true; // Valid choice made
+
+                if(choiceNum === 1) {
+                    currentLocation = "Blacksmith"
+                    console.log("\nYou enter the blacksmith's shop.");
+                } else if(choiceNum === 2) {
+                    currentLocation = "Upper Districts"
+                    console.log("\nYou head to the Upper Districts and spot a mysterious shop shrouded in shadows...");
+                } else if(choiceNum === 3) {
+                    currentLocation = "Undergrounds"
+                    console.log("You decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+                } else if (choiceNum === 4) {
+                    for(let slot = 1; slot <= 3; slot++) {
+                        console.log("Checking item slot " + slot + "...");
+
+                        if(slot === 1 && hasWeapon) {
+                            console.log("Found: Sword");
+                        } else if (slot === 2 && hasPotion) {
+                            console.log("Found: Life Potion");
+                        } else if (slot === 3 && hasCross) {
+                            console.log("Found: Cross");
+                        } else {
+                            console.log("Empty slot");
+                        }
+                    }
+                } else if(choiceNum === 5) {
+                    console.log("\n--- STATUS ---");
+                    console.log("💀  Health: " + playerHealth);
+                    console.log("🪙  Coins: " + playerCoin);
+                    console.log("📍  Location: " + currentLocation);
+                } else if(choiceNum === 6) {
+                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+                    gameRunning = false;
                 } else {
-                    console.log("Empty slot");
+                    console.log("\nInvalid choice. Please enter a number between 1 and 5.");
+                }
+            } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
+                if(choiceNum < 1 || choiceNum > 4) {
+                    throw "Please enter a number between 1 and 4.";
+                }
+
+                validChoice = true;
+
+                if(choiceNum === 1) {
+                    currentLocation = "Miragem City";
+                    console.log("\nYou return to the city.");
+                } else if (choiceNum === 2) {
+                    for(let slot = 1; slot <= 3; slot++) {
+                        console.log("Checking item slot " + slot + "...");
+
+                        if(slot === 1 && hasWeapon) {
+                            console.log("Found: Sword");
+                        } else if (slot === 2 && hasPotion) {
+                            console.log("Found: Life Potion");
+                        } else if (slot === 3 && hasCross) {
+                            console.log("Found: Cross");
+                        } else {
+                            console.log("Empty slot");
+                        }
+                    }
+                } else if(choiceNum === 3) {
+                    console.log("\n--- STATUS ---");
+                    console.log("💀  Health: " + playerHealth);
+                    console.log("🪙  Coins: " + playerCoin);
+                    console.log("📍  Location: " + currentLocation);
+                } else if(choiceNum === 4) {
+                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+                    gameRunning = false;
+                } else {
+                    console.log("\nInvalid choice. Please enter a number between 1 and 3.");
                 }
             }
-        } else if(choiceNum === 5) {
-            console.log("\n--- STATUS ---");
-            console.log("💀  Health: " + playerHealth);
-            console.log("🪙  Coins: " + playerCoin);
-            console.log("📍  Location: " + currentLocation);
-        } else if(choiceNum === 6) {
-            console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
-            gameRunning = false;
-        } else {
-            console.log("\nInvalid choice. Please enter a number between 1 and 5.");
-        }
-    } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
-        if(choiceNum === 1) {
-            currentLocation = "Miragem City";
-            console.log("\nYou return to the city.");
-        } else if (choiceNum === 2) {
-            for(let slot = 1; slot <= 3; slot++) {
-                console.log("Checking item slot " + slot + "...");
-
-                if(slot === 1 && hasWeapon) {
-                    console.log("Found: Sword");
-                } else if (slot === 2 && hasPotion) {
-                    console.log("Found: Life Potion");
-                } else if (slot === 3 && hasCross) {
-                    console.log("Found: Cross");
-                } else {
-                    console.log("Empty slot");
-                }
-            }
-        } else if(choiceNum === 3) {
-            console.log("\n--- STATUS ---");
-            console.log("💀  Health: " + playerHealth);
-            console.log("🪙  Coins: " + playerCoin);
-            console.log("📍  Location: " + currentLocation);
-        } else if(choiceNum === 4) {
-            console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
-            gameRunning = false;
-        } else {
-            console.log("\nInvalid choice. Please enter a number between 1 and 3.");
+        } catch(error) {
+            console.log("\nERROR: " + error);
+            console.log("LOG: RETRY LAST ACTION");
         }
     }
-
     //Check if player died
     if(playerHealth <= 0) {
         console.log("\nYOU DIED. GAME OVER.");
