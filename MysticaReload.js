@@ -45,9 +45,14 @@ let hasWeapon = false;
 let hasPotion = false;
 let hasCross = false;
 
-//Main game loop
-while(gameRunning) {
-    //Location display
+function showStatus() {
+    console.log("\n--- STATUS ---");
+    console.log("💀  Health: " + playerHealth);
+    console.log("🪙  Coins: " + playerCoin);
+    console.log("📍  Location: " + currentLocation);
+}
+
+function showLocation() {
     if(currentLocation === "Miragem City") {
         console.log("\n--- MIRAGEM CITY ---");
         console.log("You're in Miragem City. There are tall buildings of various assortments all around you, connected by catwalks. Below, you can see the deep end of the city: the lower districts. A suffocating haze hangs around the city permanently.");
@@ -102,7 +107,39 @@ while(gameRunning) {
         currentLocation = "Miragem City"; //Return to city after battle
         console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
     }
+}
 
+function move(choiceNum) {
+    let validMove = false;
+
+    if(currentLocation === "Miragem City") {
+        if(choiceNum === 1) {
+            currentLocation = "Blacksmith"
+            console.log("\nYou enter the blacksmith's shop.");
+            validMove = true;
+        } else if(choiceNum === 2) {
+            currentLocation = "Upper Districts"
+            console.log("\nYou head to the Upper Districts and spot a mysterious shop shrouded in shadows...");
+            validMove = true;
+        } else if(choiceNum === 3) {
+            currentLocation = "Undergrounds"
+            console.log("You decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+            validMove = true;
+        }
+    } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
+        if(choiceNum === 1) {
+            currentLocation = "Miragem City";
+            console.log("\nYou return to the city.");
+            validMove = true;
+        }
+    }
+
+    return validMove;
+}
+
+//Main game loop
+while(gameRunning) {
+    showLocation();
     let validChoice = false;
     while(!validChoice) {
         try {
@@ -123,15 +160,10 @@ while(gameRunning) {
 
                 validChoice = true; // Valid choice made
 
-                if(choiceNum === 1) {
-                    currentLocation = "Blacksmith"
-                    console.log("\nYou enter the blacksmith's shop.");
-                } else if(choiceNum === 2) {
-                    currentLocation = "Upper Districts"
-                    console.log("\nYou head to the Upper Districts and spot a mysterious shop shrouded in shadows...");
-                } else if(choiceNum === 3) {
-                    currentLocation = "Undergrounds"
-                    console.log("You decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+                if(choiceNum <= 3) {
+                    if(!move(choiceNum)) {
+                        console.log("\nYou can't go there...");
+                    }
                 } else if (choiceNum === 4) {
                     for(let slot = 1; slot <= 3; slot++) {
                         console.log("Checking item slot " + slot + "...");
@@ -147,10 +179,7 @@ while(gameRunning) {
                         }
                     }
                 } else if(choiceNum === 5) {
-                    console.log("\n--- STATUS ---");
-                    console.log("💀  Health: " + playerHealth);
-                    console.log("🪙  Coins: " + playerCoin);
-                    console.log("📍  Location: " + currentLocation);
+                    showStatus();
                 } else if(choiceNum === 6) {
                     console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
                     gameRunning = false;
@@ -165,8 +194,9 @@ while(gameRunning) {
                 validChoice = true;
 
                 if(choiceNum === 1) {
-                    currentLocation = "Miragem City";
-                    console.log("\nYou return to the city.");
+                    if(!move(choiceNum)) {
+                        console.log("\nYou can't go there...");
+                    }
                 } else if (choiceNum === 2) {
                     for(let slot = 1; slot <= 3; slot++) {
                         console.log("Checking item slot " + slot + "...");
@@ -182,10 +212,7 @@ while(gameRunning) {
                         }
                     }
                 } else if(choiceNum === 3) {
-                    console.log("\n--- STATUS ---");
-                    console.log("💀  Health: " + playerHealth);
-                    console.log("🪙  Coins: " + playerCoin);
-                    console.log("📍  Location: " + currentLocation);
+                    showStatus();
                 } else if(choiceNum === 4) {
                     console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
                     gameRunning = false;
