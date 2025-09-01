@@ -6,6 +6,9 @@
 ## 🌆 FEATURES 🌆
 * Character and dialogue-driven story
 * Multiple endings and story paths
+* Different areas to explore
+* Various demon battles
+* Secrets, details and clues to uncover
 
 ◣━━━━━━━━━━━━━━━◢
 
