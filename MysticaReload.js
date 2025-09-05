@@ -65,7 +65,7 @@ function showLocation() {
         console.log("6: Exit game");
 
         if(firstVisit) {
-            console.log("\nA tall woman with black hair and pale skin walks over to you. Her fox eyes, lined with purple eyeshadow, analyze you carefully. 'Welcome, Rei. Legend has it the Chained Prince of the Shadows is imprisoned in the tallest tower hidden at the back of the city...' She then turns around and walks off.");
+            console.log("\nA tall woman with black hair and pale skin walks over to you. Her fox eyes, lined with purple eyeshadow, analyze you carefully. 'Welcome, Rei. Legend has it the Chained Prince of the Shadows is imprisoned in the tallest tower hidden at the back of the city... Do what you must and come back alive.' She then turns around and walks off.");
             firstVisit = false;
         }
     } else if (currentLocation === "Blacksmith") {
@@ -85,27 +85,6 @@ function showLocation() {
         console.log("2: Check inventory");
         console.log("3: Check status");
         console.log("4: Exit game");
-    } else if (currentLocation === "Undergrounds") {
-        console.log("\n--- THE UNDERGROUNDS ---");
-        console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
-
-        let inBattle = true;
-        let demonHealth = 3;
-        console.log("\nA demon lunges towards you and you dodge. Battle started.");
-
-        while(inBattle) {
-            console.log("Demon health: " + demonHealth);
-            console.log("You attack.");
-            demonHealth--;
-
-            if(demonHealth <= 0) {
-                console.log("Demon defeated. You watch its motionless body on the floor.");
-                inBattle = false;
-            }
-        }
-
-        currentLocation = "Miragem City"; //Return to city after battle
-        console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
     }
 }
 
@@ -123,7 +102,6 @@ function move(choiceNum) {
             validMove = true;
         } else if(choiceNum === 3) {
             currentLocation = "Undergrounds"
-            console.log("You decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
             validMove = true;
         }
     } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
@@ -135,6 +113,69 @@ function move(choiceNum) {
     }
 
     return validMove;
+}
+
+function handleCombat() {
+    let inBattle = true;
+    let demonHealth = 3;
+    console.log("\nYou decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+    console.log("\n--- THE UNDERGROUNDS ---");
+    console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
+    console.log("\nA demon lunges towards you and you dodge. Battle started.");
+    if(hasWeapon) {
+        console.log("Wait?! Right... you have a sword. Fine by me.");
+    }
+
+    while(inBattle) {
+        if(hasWeapon) {
+        console.log("Demon health: " + demonHealth);
+        console.log("You attack.");
+        demonHealth--;
+        } else {
+            console.log("Oh wait! Haha, you don't have a weapon!");
+            updateHealth(-100);
+            return false;
+        }
+
+        if(demonHealth <= 0) {
+            console.log("Demon defeated. You watch its motionless body on the floor.");
+            console.log("You get 10 coins for effort.");
+            console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
+            playerCoin += 10;
+            inBattle = false;
+            return true;
+        }
+    }
+}
+
+function updateHealth(amount) {
+    playerHealth += amount;
+
+    if(playerHealth > 100) {
+        playerHealth = 100;
+        console.log("You're at full health... for now, at least.");
+    }
+
+    if(playerHealth < 0) {
+        playerHealth = 0;
+        console.log("You're gravely wounded.");
+    }
+
+    console.log("Health is now: " + playerHealth);
+    return playerHealth;
+}
+
+function displayInventory() {
+    console.log("\n--- INVENTORY ---");
+    if(!hasWeapon && !hasPotion && !hasCross) {
+        console.log("Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.");
+        console.log("\nYou: 'What's your problem...'");
+        return;
+    }
+
+    if(hasWeapon) console.log("- Sword");
+    if(hasPotion) console.log("- Life Potion");
+    if(hasCross) console.log("- Cross- keep that away from me-! Hell.");
 }
 
 //Main game loop
@@ -160,24 +201,16 @@ while(gameRunning) {
 
                 validChoice = true; // Valid choice made
 
-                if(choiceNum <= 3) {
+                if(choiceNum < 3) {
                     if(!move(choiceNum)) {
                         console.log("\nYou can't go there...");
                     }
-                } else if (choiceNum === 4) {
-                    for(let slot = 1; slot <= 3; slot++) {
-                        console.log("Checking item slot " + slot + "...");
-
-                        if(slot === 1 && hasWeapon) {
-                            console.log("Found: Sword");
-                        } else if (slot === 2 && hasPotion) {
-                            console.log("Found: Life Potion");
-                        } else if (slot === 3 && hasCross) {
-                            console.log("Found: Cross");
-                        } else {
-                            console.log("Empty slot");
-                        }
+                } else if (choiceNum === 3) {
+                    if(!handleCombat()) {
+                        currentLocation = "Miragem City";
                     }
+                } else if (choiceNum === 4) {
+                    displayInventory();
                 } else if(choiceNum === 5) {
                     showStatus();
                 } else if(choiceNum === 6) {
@@ -194,23 +227,9 @@ while(gameRunning) {
                 validChoice = true;
 
                 if(choiceNum === 1) {
-                    if(!move(choiceNum)) {
-                        console.log("\nYou can't go there...");
-                    }
+                    move(choiceNum);
                 } else if (choiceNum === 2) {
-                    for(let slot = 1; slot <= 3; slot++) {
-                        console.log("Checking item slot " + slot + "...");
-
-                        if(slot === 1 && hasWeapon) {
-                            console.log("Found: Sword");
-                        } else if (slot === 2 && hasPotion) {
-                            console.log("Found: Life Potion");
-                        } else if (slot === 3 && hasCross) {
-                            console.log("Found: Cross");
-                        } else {
-                            console.log("Empty slot");
-                        }
-                    }
+                    displayInventory();
                 } else if(choiceNum === 3) {
                     showStatus();
                 } else if(choiceNum === 4) {
