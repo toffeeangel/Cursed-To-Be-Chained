@@ -6,45 +6,23 @@
 const readline = require('readline-sync');
 
 // Game stats
+let gameRunning = true;
 let playerHealth = 100;
 let playerCoin = 20; // Starting coins
-let inventory = [];
-
-// Display the game title
-console.log("Welcome to Mystica: RELOAD");
-
-// Starting message
-console.log("Now entering uncharted territory...");
-
-// Welcome the player
-console.log("\nRei, was it? Nevermind, not important...");
-console.log("\nWelcome, Rei.");
-console.log("You start with " + playerCoin + " coins.");
-console.log("\nYour quest: rescue the Chained Prince of the Shadows from the tower he's been imprisoned in, and hope that in return he'll free you from the curse that binds your soul to this city.");
-
-// Weapon damage (starts at 0 until player buys a sword)
-let weaponDamage = 0; // Will increase to 10 when player gets a sword
-console.log("\nStarting weapon damage: " + weaponDamage);
-console.log("When you buy a sword, weapon damage will increase to 10.");
-
-// Demon defense (affects combat outcomes)
-let demonDefense = 5; // Demon's defense value
-console.log("\nDemon defense: " + demonDefense);
-console.log("Demons can withstand some damage in combat.");
-
-// Healing potion restoration
-let healingPotionValue = 30; // How much health the potion restores
-console.log("\nHealing potion value: " + healingPotionValue);
-console.log("A potion will restore 30 health.");
-
-//Location tracking
-let gameRunning = true;
 let currentLocation = "Miragem City";
 let firstVisit = true;
 let hasWeapon = false;
 let hasPotion = false;
 let hasCross = false;
 
+// Weapon damage (starts at 0 until player buys a sword)
+let weaponDamage = 0; // Base weapon damage
+let demonDefense = 5; // Demon's defense value
+let healingPotionValue = 30; // How much health the potion restores
+
+// --- INFORMATION DISPLAY FUNCTIONS ---
+
+// Shows status including health, coins and current location
 function showStatus() {
     console.log("\n--- STATUS ---");
     console.log("💀  Health: " + playerHealth);
@@ -52,6 +30,7 @@ function showStatus() {
     console.log("📍  Location: " + currentLocation);
 }
 
+// Shows location descriptions and choices
 function showLocation() {
     if(currentLocation === "Miragem City") {
         console.log("\n--- MIRAGEM CITY ---");
@@ -62,7 +41,9 @@ function showLocation() {
         console.log("3: Go straight to the tower the Prince is imprisoned in");
         console.log("4: Check inventory");
         console.log("5: Check status");
-        console.log("6: Exit game");
+        console.log("6: Use item");
+        console.log("7: Help");
+        console.log("8: Exit game");
 
         if(firstVisit) {
             console.log("\nA tall woman with black hair and pale skin walks over to you. Her fox eyes, lined with purple eyeshadow, analyze you carefully. 'Welcome, Rei. Legend has it the Chained Prince of the Shadows is imprisoned in the tallest tower hidden at the back of the city... Do what you must and come back alive.' She then turns around and walks off.");
@@ -72,40 +53,61 @@ function showLocation() {
         console.log("\n--- BLACKSMITH ---");
         console.log("It's relatively dark here, but you can feel the heat all around you. Weapons and armour line the walls.");
         console.log("\nWhat would you like to do?");
-        console.log("1: Return to city");
-        console.log("2: Check inventory");
-        console.log("3: Check status");
-        console.log("4: Exit game");
+        console.log("1: Buy sword (10 coins)");
+        console.log("2: Return to city");
+        console.log("3: Check inventory");
+        console.log("4: Check status");
+        console.log("5: Use item");
+        console.log("6: Help");
+        console.log("7: Exit game");
     } else if (currentLocation === "Upper Districts") {
         console.log("\n--- UPPER DISTRICTS ---");
         console.log("The Upper Districts are lined with shops and buildings, all abandoned or closed down. However, you spot a dusty old potion shop in a corner...");
-
         console.log("\nWhat would you like to do?");
-        console.log("1: Return to city");
-        console.log("2: Check inventory");
-        console.log("3: Check status");
-        console.log("4: Exit game");
+        console.log("1: Buy potion (5 coins)");
+        console.log("2: Return to city");
+        console.log("3: Check inventory");
+        console.log("4: Check status");
+        console.log("5: Use item");
+        console.log("6: Help");
+        console.log("7: Exit game");
     }
 }
+
+// --- MOVEMENT FUNCTIONS ---
+
+/**
+ * Handles game choices and location movement
+ * @param {number} choiceNum The chosen option number
+ * @returns {boolean} True if movement was successful
+ */
 
 function move(choiceNum) {
     let validMove = false;
 
     if(currentLocation === "Miragem City") {
         if(choiceNum === 1) {
-            currentLocation = "Blacksmith"
+            currentLocation = "Blacksmith";
             console.log("\nYou enter the blacksmith's shop.");
             validMove = true;
         } else if(choiceNum === 2) {
-            currentLocation = "Upper Districts"
-            console.log("\nYou head to the Upper Districts and spot a mysterious shop shrouded in shadows...");
+            currentLocation = "Upper Districts";
+            console.log("\nYou head to the Upper Districts.");
             validMove = true;
         } else if(choiceNum === 3) {
-            currentLocation = "Undergrounds"
+            currentLocation = "Undergrounds";
+            console.log("\nYou decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+            console.log("\n--- THE UNDERGROUNDS ---");
+            console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
             validMove = true;
+
+            // Trigger combat when entering the Undergrounds
+            if(!handleCombat()) {
+                currentLocation = "Miragem City";
+            }
         }
     } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
-        if(choiceNum === 1) {
+        if(choiceNum === 2) {
             currentLocation = "Miragem City";
             console.log("\nYou return to the city.");
             validMove = true;
@@ -115,12 +117,18 @@ function move(choiceNum) {
     return validMove;
 }
 
+// --- COMBAT FUNCTIONS ---
+// Functions that handle battle and health
+
+/**
+ * Handles demon battles
+ * Checks if player has weapon and manages combat results
+ * @returns {boolean} true if player wins, false if they enter without a weapon, leading to player death
+ */
+
 function handleCombat() {
     let inBattle = true;
     let demonHealth = 3;
-    console.log("\nYou decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
-    console.log("\n--- THE UNDERGROUNDS ---");
-    console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
     console.log("\nA demon lunges towards you and you dodge. Battle started.");
     if(hasWeapon) {
         console.log("Wait?! Right... you have a sword. Fine by me.");
@@ -138,7 +146,7 @@ function handleCombat() {
         }
 
         if(demonHealth <= 0) {
-            console.log("Demon defeated. You watch its motionless body on the floor.");
+            console.log("Demon defeated. You watch its mutilated body on the floor.");
             console.log("You get 10 coins for effort.");
             console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
             playerCoin += 10;
@@ -148,6 +156,11 @@ function handleCombat() {
     }
 }
 
+/**
+ * Updates player health, keeping it between 0 and 100
+ * @param {number} amount Amount to change health by (positive for healing, negative for damage)
+ * @returns {number} The new health value
+ */
 function updateHealth(amount) {
     playerHealth += amount;
 
@@ -165,10 +178,32 @@ function updateHealth(amount) {
     return playerHealth;
 }
 
+// --- ITEM FUNCTIONS ---
+// Functions that handle item usage and inventory
+
+/**
+ * Handles using items like potions
+ * @returns {boolean} true if item was used successfully, false if not
+ */
+function useItem() {
+    if(hasPotion) {
+        console.log("You drink the Life Potion.");
+        console.log("\nNarrator: 'Full disclosure, I may or may not have poisoned it.'");
+        console.log("\nYou: 'WHAT?! WHY?!'");
+        console.log("\nNarrator: 'Calm down. I said I 𝑚𝑎𝑦 or 𝑚𝑎𝑦 𝑛𝑜𝑡 have done something.'");
+        updateHealth(30);
+        hasPotion = false;
+        return true;
+    }
+    console.log("\nNarrator: 'You don't have any usable items. If you're bleeding out or something, you're gonna have to deal with it.'");
+    return false;
+}
+
+// Displays inventory
 function displayInventory() {
     console.log("\n--- INVENTORY ---");
     if(!hasWeapon && !hasPotion && !hasCross) {
-        console.log("Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.");
+        console.log("Narrator: 'Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.'");
         console.log("\nYou: 'What's your problem...'");
         return;
     }
@@ -178,61 +213,172 @@ function displayInventory() {
     if(hasCross) console.log("- Cross- keep that away from me-! Hell.");
 }
 
-//Main game loop
+// --- SHOPPING FUNCTIONS ---
+
+// Handles buying items at the blacksmith
+function buyFromBlacksmith() {
+    if(playerCoin >= 10) {
+        console.log("\nBlacksmith: 'Take this sword. You're going to need it.'");
+        playerCoin -= 10;
+        hasWeapon = true;
+        console.log("\nYou take the sword and look at its jewel-encrusted hilt, feeling the magic humming in its blade. You buy it for 10 coins.");
+        console.log("Remaining coins: " + playerCoin);
+    } else {
+        console.log("\nBlacksmith: 'You don't have enough coins. This isn't for free, you know. Come back later.'");
+    }
+}
+
+// Handles buying items at the Upper Districts shops
+function buyFromPotionShop() {
+    if(playerCoin >= 5) {
+        console.log("\nYou enter the shop with the sign that reads, 'Potions and Contortions'. Inside, you find a young woman with freckles and light pink hair up in space buns. Her necklace says, 'Nora'.");
+        console.log("\nNora: 'This potion will heal your physical wounds, can't say the same for your spiritual ones, though.'");
+        playerCoin -= 5;
+        hasPotion = true;
+        console.log("\nYou buy a Life Potion for 5 coins. You look hesitantly at the purple liquid swirling inside.");
+        console.log("Remaining coins: " + playerCoin);
+    } else {
+        console.log("\nNora: 'No coins, no potion, sorry.'");
+    }
+}
+
+// --- HELP SYSTEM ---
+
+// Shows all available game commands and how to use them
+function showHelp() {
+    console.log("\nNarrator: 'Help? Holy Beelzebub, you really are useless...'");
+    console.log("\n--- HELP ---");
+
+    console.log("\nMovement Commands:");
+    console.log("- In Miragem City, choose 1-3 to travel to different locations");
+    console.log("- In other locations, choose the return option to go back to Miragem City");
+
+    console.log("\nBattle Information:");
+    console.log("\nNarrator: '... Why don't we go to the Undergrounds and find out?'");
+
+    console.log("\nItem usage:");
+    console.log("- Life Potions restore 30 health");
+    console.log("- You can buy Life Potions at the shop in the Upper Districts for 5 coins");
+    console.log("- You can buy a sword at the blacksmith for 10 coins");
+
+    console.log("\nOther commands:");
+    console.log("- Choose the status option to see your current location, health and coins");
+    console.log("- Choose the help option to see this message again");
+    console.log("- Choose the exit option to end the game");
+
+    console.log("\nTips:");
+    console.log("- Keep healing potions for dangerous areas");
+    console.log("- Defeat demons to earn coins");
+    console.log("- Don't get too comfortable around the narrator...");
+
+    console.log("\nNarrator: 'And look, if you ever need help... don't ask me.'");
+    console.log("You: '...'");
+}
+
+// --- MAIN GAME LOOP ---
+
+// Display the game title
+console.log("Welcome to Mystica: RELOAD");
+
+// Starting message
+console.log("Now entering uncharted territory...");
+
+// Welcome the player
+console.log("\nRei, was it? Nevermind, not important...");
+console.log("\nWelcome, Rei.");
+console.log("You start with " + playerCoin + " coins.");
+console.log("\nYour quest: rescue the Chained Prince of the Shadows from the tower he's been imprisoned in, and hope that in return he'll free you from the curse that binds your soul to this city.");
+
 while(gameRunning) {
+    // Show current location and choices
     showLocation();
+
+    // Get and validate player choice
     let validChoice = false;
     while(!validChoice) {
         try {
             let choice = readline.question("\nEnter choice (number): ");
+
+            // Check for sneaky empty input
             if(choice.trim() === "") {
                 throw "Please enter a number.";
             }
 
+            // Convert to number and check for validity
             let choiceNum = parseInt(choice);
             if(isNaN(choiceNum)) {
                 throw "That's not a number. Please enter a number.";
             }
             
+            // Handle choices based on location
             if(currentLocation === "Miragem City") {
-                if(choiceNum < 1 || choiceNum > 6) {
-                    throw "Please enter a number between 1 and 6.";
+                if(choiceNum < 1 || choiceNum > 8) {
+                    throw "Please enter a number between 1 and 8.";
                 }
 
                 validChoice = true; // Valid choice made
 
-                if(choiceNum < 3) {
-                    if(!move(choiceNum)) {
-                        console.log("\nYou can't go there...");
-                    }
-                } else if (choiceNum === 3) {
-                    if(!handleCombat()) {
-                        currentLocation = "Miragem City";
-                    }
+                if(choiceNum <= 3) {
+                    move(choiceNum);
                 } else if (choiceNum === 4) {
                     displayInventory();
                 } else if(choiceNum === 5) {
                     showStatus();
                 } else if(choiceNum === 6) {
+                    useItem();
+                } else if(choiceNum === 7) {
+                    showHelp();
+                } else if(choiceNum === 8) {
                     console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
                     gameRunning = false;
                 } else {
                     console.log("\nInvalid choice. Please enter a number between 1 and 5.");
                 }
-            } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
-                if(choiceNum < 1 || choiceNum > 4) {
-                    throw "Please enter a number between 1 and 4.";
+            } else if (currentLocation === "Blacksmith") {
+                if(choiceNum < 1 || choiceNum > 7) {
+                    throw "Please enter a number between 1 and 7.";
                 }
 
                 validChoice = true;
 
                 if(choiceNum === 1) {
-                    move(choiceNum);
+                    buyFromBlacksmith();
                 } else if (choiceNum === 2) {
-                    displayInventory();
+                    move(choiceNum);
                 } else if(choiceNum === 3) {
-                    showStatus();
+                    displayInventory();
                 } else if(choiceNum === 4) {
+                    showStatus();
+                } else if(choiceNum === 5) {
+                    useItem();
+                } else if(choiceNum === 6) {
+                    showHelp();
+                } else if(choiceNum === 7) {
+                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+                    gameRunning = false;
+                } else {
+                    console.log("\nInvalid choice. Please enter a number between 1 and 3.");
+                }
+            } else if(currentLocation === "Upper Districts") {
+                if(choiceNum < 1 || choiceNum > 7) {
+                    throw "Please enter a number between 1 and 7.";
+                }
+
+                validChoice = true;
+
+                if(choiceNum === 1) {
+                    buyFromPotionShop();
+                } else if (choiceNum === 2) {
+                    move(choiceNum);
+                } else if(choiceNum === 3) {
+                    displayInventory();
+                } else if(choiceNum === 4) {
+                    showStatus();
+                } else if(choiceNum === 5) {
+                    useItem();
+                } else if(choiceNum === 6) {
+                    showHelp();
+                } else if(choiceNum === 7) {
                     console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
                     gameRunning = false;
                 } else {
