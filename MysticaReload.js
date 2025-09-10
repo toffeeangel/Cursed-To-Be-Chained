@@ -11,9 +11,7 @@ let playerHealth = 100;
 let playerCoin = 20; // Starting coins
 let currentLocation = "Miragem City";
 let firstVisit = true;
-let hasWeapon = false;
-let hasPotion = false;
-let hasCross = false;
+let inventory = []; // Will store all player items
 
 // Weapon damage (starts at 0 until player buys a sword)
 let weaponDamage = 0; // Base weapon damage
@@ -130,12 +128,13 @@ function handleCombat() {
     let inBattle = true;
     let demonHealth = 3;
     console.log("\nA demon lunges towards you and you dodge. Battle started.");
-    if(hasWeapon) {
-        console.log("Wait?! Right... you have a sword. Fine by me.");
+    if(inventory.includes("Sword")) {
+        console.log("\nNarrator: 'Wait?! Right... you have a sword. Fine by me.'");
+        console.log("");
     }
 
     while(inBattle) {
-        if(hasWeapon) {
+        if(inventory.includes("Sword")) {
         console.log("Demon health: " + demonHealth);
         console.log("You attack.");
         demonHealth--;
@@ -146,11 +145,12 @@ function handleCombat() {
         }
 
         if(demonHealth <= 0) {
-            console.log("Demon defeated. You watch its mutilated body on the floor.");
+            console.log("\nDemon defeated. You watch its mutilated body on the floor.");
             console.log("You get 10 coins for effort.");
             console.log("\nShocked, you run up the stairs and out of the Undergrounds.");
             playerCoin += 10;
             inBattle = false;
+            currentLocation = "Miragem City";
             return true;
         }
     }
@@ -186,13 +186,17 @@ function updateHealth(amount) {
  * @returns {boolean} true if item was used successfully, false if not
  */
 function useItem() {
-    if(hasPotion) {
-        console.log("You drink the Life Potion.");
+    if(inventory.includes("Life Potion")) {
+        console.log("\nYou drink the Life Potion.");
         console.log("\nNarrator: 'Full disclosure, I may or may not have poisoned it.'");
         console.log("\nYou: 'WHAT?! WHY?!'");
         console.log("\nNarrator: 'Calm down. I said I 𝑚𝑎𝑦 or 𝑚𝑎𝑦 𝑛𝑜𝑡 have done something.'");
         updateHealth(30);
-        hasPotion = false;
+
+        // Remove the potion from inventory
+        let potionIndex = inventory.indexOf("Life Potion");
+        inventory.splice(potionIndex, 1);
+
         return true;
     }
     console.log("\nNarrator: 'You don't have any usable items. If you're bleeding out or something, you're gonna have to deal with it.'");
@@ -202,25 +206,35 @@ function useItem() {
 // Displays inventory
 function displayInventory() {
     console.log("\n--- INVENTORY ---");
-    if(!hasWeapon && !hasPotion && !hasCross) {
+    if(inventory.length === 0) {
         console.log("Narrator: 'Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.'");
         console.log("\nYou: 'What's your problem...'");
         return;
+    } else {
+        inventory.forEach((item) => {
+            if(item === "Cross") {
+                console.log("- " + item + "- keep that away from me-! Hell.");
+            } else {
+                console.log("- " + item);
+            }
+        });
     }
-
-    if(hasWeapon) console.log("- Sword");
-    if(hasPotion) console.log("- Life Potion");
-    if(hasCross) console.log("- Cross- keep that away from me-! Hell.");
 }
 
 // --- SHOPPING FUNCTIONS ---
 
 // Handles buying items at the blacksmith
 function buyFromBlacksmith() {
-    if(playerCoin >= 10) {
+    if(inventory.includes("Sword")) {
+        console.log("\nNarrator: 'Rei, you already have a sword. Now what do you need another one for?'");
+    }
+    else if(playerCoin >= 10) {
         console.log("\nBlacksmith: 'Take this sword. You're going to need it.'");
         playerCoin -= 10;
-        hasWeapon = true;
+
+        // Add sword to inventory array
+        inventory.push("Sword");
+
         console.log("\nYou take the sword and look at its jewel-encrusted hilt, feeling the magic humming in its blade. You buy it for 10 coins.");
         console.log("Remaining coins: " + playerCoin);
     } else {
@@ -230,11 +244,17 @@ function buyFromBlacksmith() {
 
 // Handles buying items at the Upper Districts shops
 function buyFromPotionShop() {
-    if(playerCoin >= 5) {
+    if(inventory.includes("Life Potion")) {
+        console.log("\nNora: 'Hang on... you can only take one potion at a time.'");
+    }
+    else if(playerCoin >= 5) {
         console.log("\nYou enter the shop with the sign that reads, 'Potions and Contortions'. Inside, you find a young woman with freckles and light pink hair up in space buns. Her necklace says, 'Nora'.");
         console.log("\nNora: 'This potion will heal your physical wounds, can't say the same for your spiritual ones, though.'");
         playerCoin -= 5;
-        hasPotion = true;
+
+        // Add Life Potion to inventory array
+        inventory.push("Life Potion");
+
         console.log("\nYou buy a Life Potion for 5 coins. You look hesitantly at the purple liquid swirling inside.");
         console.log("Remaining coins: " + playerCoin);
     } else {
