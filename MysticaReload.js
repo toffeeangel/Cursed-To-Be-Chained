@@ -18,6 +18,31 @@ let weaponDamage = 0; // Base weapon damage
 let demonDefense = 5; // Demon's defense value
 let healingPotionValue = 30; // How much health the potion restores
 
+// Item templates with properties
+const lifePotion = {
+    name: "Life Potion",
+    type: "Potion",
+    value: 5, // Cost in coins
+    effect: 30, // Healing amount
+    description: "Restores 30 health points"
+}
+
+const sword = {
+    name: "Sword",
+    type: "Weapon",
+    value: 10, // Cost in coins
+    effect: 10, // Damage amount
+    description: "A magical blade for combat"
+}
+
+const cross = {
+    name: "Cross",
+    type: "Defense",
+    value: 15,
+    effect: 15,
+    description: "Gives you stronger defense against demons"
+}
+
 // --- INFORMATION DISPLAY FUNCTIONS ---
 
 // Shows status including health, coins and current location
@@ -51,7 +76,7 @@ function showLocation() {
         console.log("\n--- BLACKSMITH ---");
         console.log("It's relatively dark here, but you can feel the heat all around you. Weapons and armour line the walls.");
         console.log("\nWhat would you like to do?");
-        console.log("1: Buy sword (10 coins)");
+        console.log("1: Buy sword (" + sword.value + " gold)");
         console.log("2: Return to city");
         console.log("3: Check inventory");
         console.log("4: Check status");
@@ -62,7 +87,7 @@ function showLocation() {
         console.log("\n--- UPPER DISTRICTS ---");
         console.log("The Upper Districts are lined with shops and buildings, all abandoned or closed down. However, you spot a dusty old potion shop in a corner...");
         console.log("\nWhat would you like to do?");
-        console.log("1: Buy potion (5 coins)");
+        console.log("1: Buy potion (" + lifePotion.value + " gold)");
         console.log("2: Return to city");
         console.log("3: Check inventory");
         console.log("4: Check status");
@@ -119,6 +144,16 @@ function move(choiceNum) {
 // Functions that handle battle and health
 
 /**
+ * Checks if player has an item of specified type
+ * @param {string} type The type of item to check for
+ * @returns {boolean} True if player has the item type
+ */
+
+function hasItemType(type) {
+    return inventory.some(item => item.type === type);
+}
+
+/**
  * Handles demon battles
  * Checks if player has weapon and manages combat results
  * @returns {boolean} true if player wins, false if they enter without a weapon, leading to player death
@@ -128,16 +163,21 @@ function handleCombat() {
     let inBattle = true;
     let demonHealth = 3;
     console.log("\nA demon lunges towards you and you dodge. Battle started.");
-    if(inventory.includes("Sword")) {
-        console.log("\nNarrator: 'Wait?! Right... you have a sword. Fine by me.'");
+    if(hasItemType("Weapon")) {
+        let weapon = inventory.find(item => item.type === "Weapon");
+        console.log("\nNarrator: 'Wait?! Right... you have a " + weapon.name + ". Fine by me.'");
         console.log("");
     }
 
     while(inBattle) {
-        if(inventory.includes("Sword")) {
-        console.log("Demon health: " + demonHealth);
-        console.log("You attack.");
+        if(hasItemType("Weapon")) {
+        let weapon = inventory.find(item => item.type === "Weapon");
+        console.log("\nDemon health: " + demonHealth);
+        console.log("You deal damage.");
         demonHealth--;
+        console.log("\nThe demon lunges at you. You take damage.");
+        console.log("Your health: " + playerHealth);
+        playerHealth--;
         } else {
             console.log("Oh wait! Haha, you don't have a weapon!");
             updateHealth(-100);
@@ -186,17 +226,14 @@ function updateHealth(amount) {
  * @returns {boolean} true if item was used successfully, false if not
  */
 function useItem() {
-    if(inventory.includes("Life Potion")) {
-        console.log("\nYou drink the Life Potion.");
+    if(hasItemType("Potion")) {
+        console.log("\nYou drink the " + lifePotion.name + ".");
         console.log("\nNarrator: 'Full disclosure, I may or may not have poisoned it.'");
         console.log("\nYou: 'WHAT?! WHY?!'");
         console.log("\nNarrator: 'Calm down. I said I 𝑚𝑎𝑦 or 𝑚𝑎𝑦 𝑛𝑜𝑡 have done something.'");
-        updateHealth(30);
-
-        // Remove the potion from inventory
+        updateHealth(lifePotion.effect);
         let potionIndex = inventory.indexOf("Life Potion");
         inventory.splice(potionIndex, 1);
-
         return true;
     }
     console.log("\nNarrator: 'You don't have any usable items. If you're bleeding out or something, you're gonna have to deal with it.'");
@@ -212,10 +249,10 @@ function displayInventory() {
         return;
     } else {
         inventory.forEach((item) => {
-            if(item === "Cross") {
-                console.log("- " + item + "- keep that away from me-! Hell.");
+            if(item.name === "Cross") {
+                console.log("- " + item.name + "- keep that away from me-! Hell.");
             } else {
-                console.log("- " + item);
+                console.log("- " + item.name);
             }
         });
     }
@@ -225,17 +262,17 @@ function displayInventory() {
 
 // Handles buying items at the blacksmith
 function buyFromBlacksmith() {
-    if(inventory.includes("Sword")) {
+    if(hasItemType("Weapon")) {
         console.log("\nNarrator: 'Rei, you already have a sword. Now what do you need another one for?'");
     }
-    else if(playerCoin >= 10) {
+    else if(playerCoin >= sword.value) {
         console.log("\nBlacksmith: 'Take this sword. You're going to need it.'");
-        playerCoin -= 10;
+        playerCoin -= sword.value;
 
-        // Add sword to inventory array
-        inventory.push("Sword");
+        // Add sword object to inventory
+        inventory.push({...sword}); // Create a copy of the sword object
 
-        console.log("\nYou take the sword and look at its jewel-encrusted hilt, feeling the magic humming in its blade. You buy it for 10 coins.");
+        console.log("\nYou take the " + sword.name + " and look at its jewel-encrusted hilt, feeling the magic humming in its blade. You buy it for " + sword.value + " coins.");
         console.log("Remaining coins: " + playerCoin);
     } else {
         console.log("\nBlacksmith: 'You don't have enough coins. This isn't for free, you know. Come back later.'");
@@ -244,18 +281,18 @@ function buyFromBlacksmith() {
 
 // Handles buying items at the Upper Districts shops
 function buyFromPotionShop() {
-    if(inventory.includes("Life Potion")) {
+    if(hasItemType("Potion")) {
         console.log("\nNora: 'Hang on... you can only take one potion at a time.'");
     }
-    else if(playerCoin >= 5) {
+    else if(playerCoin >= lifePotion.value) {
         console.log("\nYou enter the shop with the sign that reads, 'Potions and Contortions'. Inside, you find a young woman with freckles and light pink hair up in space buns. Her necklace says, 'Nora'.");
         console.log("\nNora: 'This potion will heal your physical wounds, can't say the same for your spiritual ones, though.'");
-        playerCoin -= 5;
+        playerCoin -= lifePotion.value;
 
-        // Add Life Potion to inventory array
-        inventory.push("Life Potion");
+        // Add Life Potion object to inventory
+        inventory.push({...lifePotion}); // Create a copy of the Life Potion object
 
-        console.log("\nYou buy a Life Potion for 5 coins. You look hesitantly at the purple liquid swirling inside.");
+        console.log("\nYou buy a " + lifePotion.name + " for " + lifePotion.value + " coins. You look hesitantly at the purple liquid swirling inside.");
         console.log("Remaining coins: " + playerCoin);
     } else {
         console.log("\nNora: 'No coins, no potion, sorry.'");
