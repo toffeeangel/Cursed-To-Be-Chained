@@ -25,7 +25,7 @@ const lifePotion = {
     value: 5, // Cost in coins
     effect: 30, // Healing amount
     description: "Restores 30 health points"
-}
+};
 
 const sword = {
     name: "Sword",
@@ -33,14 +33,28 @@ const sword = {
     value: 10, // Cost in coins
     effect: 10, // Damage amount
     description: "A magical blade for combat"
-}
+};
 
 const cross = {
     name: "Cross",
     type: "Defense",
-    value: 15,
-    effect: 15,
+    value: 15, // Cost in coins
+    effect: 15, // Protection amount
     description: "Gives you stronger defense against demons"
+};
+
+const ashSword = {
+    name: "The Sword of Ashes",
+    type: "Weapon",
+    value: 20, // Cost in moral- I mean coins
+    effect: 20, // Damage amount
+    description: "The Sword of Ashes carries both the strength of all those who died wielding it, and their sorrow"
+};
+
+const soulCrown = {
+    name: "The Soul Crown",
+    type: "Reward",
+    description: "The Soul Crown is your objective, but it could be your rescue, or a curse..."
 }
 
 // --- INFORMATION DISPLAY FUNCTIONS ---
@@ -256,6 +270,10 @@ function displayInventory() {
             }
         });
     }
+}
+
+function getItemsByType(type) {
+    return
 }
 
 // --- SHOPPING FUNCTIONS ---
