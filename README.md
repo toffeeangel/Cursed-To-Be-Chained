@@ -13,6 +13,7 @@ https://github.com/toffeeangel
 * Different areas to explore
 * Various demon battles
 * Hidden secrets, details and clues to uncover
+* A witty demon narrator you constantly clash with
 
 ◣━━━━━━━━━━━━━━━◢
 
