@@ -5,18 +5,13 @@
 // Include readline for player input
 const readline = require('readline-sync');
 
-// Game stats
+// Game state variables
 let gameRunning = true;
 let playerHealth = 100;
 let playerCoin = 20; // Starting coins
 let currentLocation = "Miragem City";
 let firstVisit = true;
 let inventory = []; // Will store all player items
-
-// Weapon damage (starts at 0 until player buys a sword)
-let weaponDamage = 0; // Base weapon damage
-let demonDefense = 5; // Demon's defense value
-let healingPotionValue = 30; // How much health the potion restores
 
 // Item templates with properties
 const lifePotion = {
@@ -39,8 +34,7 @@ const cross = {
     name: "Cross",
     type: "Defense",
     value: 15, // Cost in coins
-    effect: 15, // Protection amount
-    description: "Gives you stronger defense against demons"
+    effect: 15 // Protection amount
 };
 
 const ashSword = {
@@ -57,9 +51,46 @@ const soulCrown = {
     description: "The Soul Crown is your objective, but it could be your rescue, or a curse..."
 }
 
-// --- INFORMATION DISPLAY FUNCTIONS ---
+// --- LOCATION SYSTEM ---
 
-// Shows status including health, coins and current location
+/**
+* Returns a description for the specified location
+* Uses a switch statement for clear, maintainable location descriptions
+* @param {string} location - The location to describe
+* @returns {string} A description of the location
+*/
+function getLocationDescription(location) {
+    switch(location) {
+        case "Miragem City":
+            const baseDescription = "You're in Miragem City. There are tall buildings of various assortments all around you, connected by catwalks. Below, you can see the deep end of the city: the lower districts. A suffocating haze hangs around the city permanently.";
+
+            if(firstVisit) {
+                firstVisit = false;
+                return (baseDescription + "\n\nA tall woman with black hair and pale skin walks over to you. Her fox eyes, lined with purple eyeshadow, analyze you carefully. 'Welcome, Rei. Legend has it the Chained Prince of the Shadows is imprisoned in the tallest tower hidden at the back of the city... Do what you must and come back alive.' She then turns around and walks off.");
+            } else {
+                console.log(baseDescription);
+            }
+            break;
+        case "Blacksmith":
+            return "It's relatively dark here, but you can feel the heat all around you. Weapons and armour line the walls.";
+        case "Upper Districts":
+            return "The Upper Districts are lined with shops and buildings, all abandoned or closed down. However, you spot a dusty old potion shop in a corner...";
+        case "Undergrounds":
+            return "You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...";
+        default:
+            return "You are lost...";
+    }
+}
+
+// Displays the current location's name and description
+function showLocation() {
+    console.log("\n--- " + currentLocation.toUpperCase() + " ---");
+    console.log(getLocationDescription(currentLocation));
+}
+
+// --- STATUS DISPLAY SYSTEM ---
+
+// Shows status including health, coins and location
 function showStatus() {
     console.log("\n--- STATUS ---");
     console.log("💀  Health: " + playerHealth);
@@ -67,135 +98,62 @@ function showStatus() {
     console.log("📍  Location: " + currentLocation);
 }
 
-// Shows location descriptions and choices
-function showLocation() {
-    if(currentLocation === "Miragem City") {
-        console.log("\n--- MIRAGEM CITY ---");
-        console.log("You're in Miragem City. There are tall buildings of various assortments all around you, connected by catwalks. Below, you can see the deep end of the city: the lower districts. A suffocating haze hangs around the city permanently.");
-        console.log("\nWhat would you like to do?");
-        console.log("1: Go to blacksmith");
-        console.log("2: Head to the Upper Districts");
-        console.log("3: Go straight to the tower the Prince is imprisoned in");
-        console.log("4: Check inventory");
-        console.log("5: Check status");
-        console.log("6: Use item");
-        console.log("7: Help");
-        console.log("8: Exit game");
-
-        if(firstVisit) {
-            console.log("\nA tall woman with black hair and pale skin walks over to you. Her fox eyes, lined with purple eyeshadow, analyze you carefully. 'Welcome, Rei. Legend has it the Chained Prince of the Shadows is imprisoned in the tallest tower hidden at the back of the city... Do what you must and come back alive.' She then turns around and walks off.");
-            firstVisit = false;
-        }
-    } else if (currentLocation === "Blacksmith") {
-        console.log("\n--- BLACKSMITH ---");
-        console.log("It's relatively dark here, but you can feel the heat all around you. Weapons and armour line the walls.");
-        console.log("\nWhat would you like to do?");
-        console.log("1: Buy sword (" + sword.value + " gold)");
-        console.log("2: Return to city");
-        console.log("3: Check inventory");
-        console.log("4: Check status");
-        console.log("5: Use item");
-        console.log("6: Help");
-        console.log("7: Exit game");
-    } else if (currentLocation === "Upper Districts") {
-        console.log("\n--- UPPER DISTRICTS ---");
-        console.log("The Upper Districts are lined with shops and buildings, all abandoned or closed down. However, you spot a dusty old potion shop in a corner...");
-        console.log("\nWhat would you like to do?");
-        console.log("1: Buy potion (" + lifePotion.value + " gold)");
-        console.log("2: Return to city");
-        console.log("3: Check inventory");
-        console.log("4: Check status");
-        console.log("5: Use item");
-        console.log("6: Help");
-        console.log("7: Exit game");
-    }
-}
-
-// --- MOVEMENT FUNCTIONS ---
+// --- COMBAT SYSTEM ---
 
 /**
- * Handles game choices and location movement
- * @param {number} choiceNum The chosen option number
- * @returns {boolean} True if movement was successful
+ * Handles battle encounters with demons or the final boss
+ * @param {boolean} isBoss - Whether this is the boss battle with the Chained Prince of Shadows
+ * @returns {boolean} Whether the battle was won
  */
-
-function move(choiceNum) {
-    let validMove = false;
-
-    if(currentLocation === "Miragem City") {
-        if(choiceNum === 1) {
-            currentLocation = "Blacksmith";
-            console.log("\nYou enter the blacksmith's shop.");
-            validMove = true;
-        } else if(choiceNum === 2) {
-            currentLocation = "Upper Districts";
-            console.log("\nYou head to the Upper Districts.");
-            validMove = true;
-        } else if(choiceNum === 3) {
-            currentLocation = "Undergrounds";
-            console.log("\nYou decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
-            console.log("\n--- THE UNDERGROUNDS ---");
-            console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
-            validMove = true;
-
-            // Trigger combat when entering the Undergrounds
-            if(!handleCombat()) {
-                currentLocation = "Miragem City";
-            }
-        }
-    } else if (currentLocation === "Blacksmith" || currentLocation === "Upper Districts") {
-        if(choiceNum === 2) {
-            currentLocation = "Miragem City";
-            console.log("\nYou return to the city.");
-            validMove = true;
-        }
-    }
-
-    return validMove;
-}
-
-// --- COMBAT FUNCTIONS ---
-// Functions that handle battle and health
-
-/**
- * Checks if player has an item of specified type
- * @param {string} type The type of item to check for
- * @returns {boolean} True if player has the item type
- */
-
-function hasItemType(type) {
-    return inventory.some(item => item.type === type);
-}
-
-/**
- * Handles demon battles
- * Checks if player has weapon and manages combat results
- * @returns {boolean} true if player wins, false if they enter without a weapon, leading to player death
- */
-
-function handleCombat() {
+function handleCombat(isBoss = false) {
     let inBattle = true;
     let demonHealth = 3;
+    let bossDamage = 40;
+    let demonDamage = 20;
+
+    // Find the best weapon to get its properties
+    const weapon = getBestItem("Weapon");
+
+    // Find the cross to get its properties
+    const cross = getBestItem("Defense");
+
     console.log("\nA demon lunges towards you and you dodge. Battle started.");
+    
+    if(!weapon) {
+        if(isBoss) {
+            updateHealth(-100);
+            return false;
+        } else {
+            console.log("Narrator: 'Oh wait! Haha, you don't have a weapon!'");
+            updateHealth(-100);
+            return false;
+        }
+    }
+
     if(hasItemType("Weapon")) {
-        let weapon = inventory.find(item => item.type === "Weapon");
         console.log("\nNarrator: 'Wait?! Right... you have a " + weapon.name + ". Fine by me.'");
         console.log("");
     }
 
+    if(hasItemType("Defense")) {
+        console.log("Narrator: 'And you have a " + cross.name + "?! Hell.'");
+        console.log("");
+    }
+
     while(inBattle) {
-        if(hasItemType("Weapon")) {
-        let weapon = inventory.find(item => item.type === "Weapon");
-        console.log("\nDemon health: " + demonHealth);
-        console.log("You deal damage.");
-        demonHealth--;
-        console.log("\nThe demon lunges at you. You take damage.");
-        console.log("Your health: " + playerHealth);
-        playerHealth--;
+        if(isBoss) {
+            if(hasGoodEquipment && playerHealth >= 50) {
+                // Add sequence of if/else statments with text and dialogue to decide the different outcomes depending on the player's choices
+            }
         } else {
-            console.log("Oh wait! Haha, you don't have a weapon!");
-            updateHealth(-100);
-            return false;
+            if(hasItemType("Weapon") && hasItemType("Defense")) {
+                console.log("\nDemon health: " + demonHealth);
+                console.log("You deal damage.");
+                demonHealth--;
+                console.log("\nThe demon lunges at you. You take " + (demonDamage - cross.effect) + " damage.");
+                updateHealth(-(demonDamage - cross.effect));
+                console.log("\nThe cross reduced the damage you took. You received " + cross.effect + " protection.");
+            }
         }
 
         if(demonHealth <= 0) {
@@ -210,30 +168,164 @@ function handleCombat() {
     }
 }
 
+// --- LOCATION-SPECIFIC HANDLERS ---
+
 /**
- * Updates player health, keeping it between 0 and 100
- * @param {number} amount Amount to change health by (positive for healing, negative for damage)
- * @returns {number} The new health value
+ * Handles player choices in Miragem City
+ * @param {number} choiceNum - The selected choice number
  */
-function updateHealth(amount) {
-    playerHealth += amount;
+function handleCityChoice(choiceNum) {
+    switch(choiceNum) {
+        case 1: // Blacksmith
+            currentLocation = "Blacksmith";
+            console.log("\nYou enter the blacksmith's shop.");
+            break;
+        case 2: // Upper Districts
+            currentLocation = "Upper Districts";
+            console.log("\nYou head to the Upper Districts.");
+            break;
+        case 3: // Undergrounds
+            currentLocation = "Undergrounds";
+            console.log("\nYou decide to head straight for the tower - at the back of the city. To get there, you'll need to take a path through the Undergrounds, starting at an abandoned subway station...");
+            console.log("\n--- THE UNDERGROUNDS ---");
+            console.log("You walk down the stairs of the abandoned subway station, deeper and deeper underground. Seemingly senseless murals and writings litter the walls. Everything is quiet, but you might not be alone...");
 
-    if(playerHealth > 100) {
-        playerHealth = 100;
-        console.log("You're at full health... for now, at least.");
+            if(!handleCombat()) {
+                currentLocation = "Miragem City";
+            }
+            break;
+        case 4: // Check inventory
+            displayInventory();
+            break;
+        case 5: // Check status
+            showStatus();
+            break;
+        case 6: // Use item
+            useItem();
+            break;
+        case 7: // Help
+            showHelp();
+            break;
+        case 8: // Exit game
+            console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+            gameRunning = false;
+            break;
     }
+}
 
-    if(playerHealth < 0) {
-        playerHealth = 0;
-        console.log("You're gravely wounded.");
+/**
+ * Handles player choices in the Blacksmith
+ * @param {number} choiceNum - The selected choice number
+ */
+function handleBlacksmithChoice(choiceNum) {
+    switch(choiceNum) {
+        case 1: // Buy a sword
+            buyFromBlacksmith();
+            break;
+        case 2: // Return to city
+            currentLocation = "Miragem City";
+            console.log("\nYou return to the city.");
+            break;
+        case 3: // Check inventory
+            displayInventory();
+            break;
+        case 4: // Check status
+            showStatus();
+            break;
+        case 5: // Use item
+            useItem();
+            break;
+        case 6: // Help
+            showHelp();
+            break;
+        case 7: // Exit game
+            console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+            gameRunning = false;
+            break;
     }
+}
 
-    console.log("Health is now: " + playerHealth);
-    return playerHealth;
+/**
+ * Handles player choices in the Upper Districts
+ * @param {number} choiceNum - The selected choice number
+ */
+function handleUpperDistrictsChoice(choiceNum) {
+    switch(choiceNum) {
+        case 1: // Buy a potion
+            buyFromPotionShop();
+            break;
+        case 2: // Return to city
+            currentLocation = "Miragem City";
+            console.log("\nYou return to the city.");
+            break;
+        case 3: // Check inventory
+            displayInventory();
+            break;
+        case 4: // Check status
+            showStatus();
+            break;
+        case 5: // Use item
+            useItem();
+            break;
+        case 6: // Help
+            showHelp();
+            break;
+        case 7: // Exit game
+            console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
+            gameRunning = false;
+            break;
+    }
+}
+
+/**
+ * Routes player choices to the appropriate location handler
+ * Central command processing point for the game
+ * @param {number} choiceNum - The selected choice number
+ */
+function processChoice(choiceNum) {
+    switch(currentLocation) {
+        case "Miragem City":
+            handleCityChoice(choiceNum);
+            break;
+        case "Blacksmith":
+            handleBlacksmithChoice(choiceNum);
+            break;
+        case "Upper Districts":
+            handleUpperDistrictsChoice(choiceNum);
+            break;
+    }
 }
 
 // --- ITEM FUNCTIONS ---
-// Functions that handle item usage and inventory
+// Functions that handle item usage, checks and inventory
+
+/**
+ * Checks if player has an item of specified type
+ * @param {string} type The type of item to check for
+ * @returns {boolean} True if player has the item type
+ */
+
+function hasItemType(type) {
+    return inventory.some(item => item.type === type);
+}
+
+// Displays inventory
+function displayInventory() {
+    console.log("\n--- INVENTORY ---");
+    if(inventory.length === 0) {
+        console.log("Narrator: 'Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.'");
+        console.log("\nYou: 'What's your problem...'");
+        return;
+    } else {
+        inventory.forEach((item) => {
+            if(item.name === "Cross") {
+                console.log("- " + item.name + "- keep that away from me-! Hell.");
+            } else {
+                console.log("- " + item.name + " - " + item.description);
+            }
+        });
+    }
+}
 
 /**
  * Handles using items like potions
@@ -254,31 +346,51 @@ function useItem() {
     return false;
 }
 
-// Displays inventory
-function displayInventory() {
-    console.log("\n--- INVENTORY ---");
-    if(inventory.length === 0) {
-        console.log("Narrator: 'Inventory empty. You came rather unprepared, Rei. It's rather funny how you think you'll make it even halfway.'");
-        console.log("\nYou: 'What's your problem...'");
-        return;
-    } else {
-        inventory.forEach((item) => {
-            if(item.name === "Cross") {
-                console.log("- " + item.name + "- keep that away from me-! Hell.");
-            } else {
-                console.log("- " + item.name);
-            }
-        });
-    }
+/**
+ * Returns an array of items that have matching types
+ * @param {string} type - The type of things to look for in inventory
+ * @returns {array} The filtered array of matching items
+ */
+function getItemsByType(type) {
+    return inventory.filter(item => item.type === type);
 }
 
-function getItemsByType(type) {
-    return
+/**
+ * Returns an array of the best items (highest protection/damage) in inventory
+ * @param {string} type - The type of things to choose between
+ * @returns {array} The filtered array of best items
+ */
+function getBestItem(type) {
+    const items = getItemsByType(type);
+    if(!items || items.length === 0) {
+        return null;
+    }
+
+    let bestItem = items[0];
+    for(let i = 0; i < items.length; i++) {
+        if(items[i].effect > bestItem.effect) {
+            bestItem = items[i];
+        }
+    }
+
+    return bestItem;
+}
+
+/**
+ * Checks if the player has good equipment to battle the Chained Prince of Shadows
+ * @returns {boolean} - True if the player has suitable equipment, false if not
+ */
+function hasGoodEquipment() {
+    if(inventory.some("The Sword of Ashes") && inventory.some("Cross")) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 // --- SHOPPING FUNCTIONS ---
 
-// Handles buying items at the blacksmith
+// Handles buying items at the Blacksmith
 function buyFromBlacksmith() {
     if(hasItemType("Weapon")) {
         console.log("\nNarrator: 'Rei, you already have a sword. Now what do you need another one for?'");
@@ -297,7 +409,7 @@ function buyFromBlacksmith() {
     }
 }
 
-// Handles buying items at the Upper Districts shops
+// Handles buying items at the "Potions and Contortions" shop
 function buyFromPotionShop() {
     if(hasItemType("Potion")) {
         console.log("\nNora: 'Hang on... you can only take one potion at a time.'");
@@ -350,10 +462,88 @@ function showHelp() {
     console.log("You: '...'");
 }
 
+// --- INPUT VALIDATION AND GAME LIMITS ---
+
+/**
+ * Updates player health with boundaries to keep it between 0 and 100
+ * @param {number} change Amount to change health by (positive for healing, negative for damage)
+ * @returns {number} The new health value
+ */
+function updateHealth(change) {
+    playerHealth += change;
+
+    if(playerHealth > 100) {
+        playerHealth = 100;
+        console.log("You're at full health... for now, at least.");
+    }
+
+    if(playerHealth < 0) {
+        playerHealth = 0;
+        console.log("You're gravely wounded.");
+    }
+
+    console.log("Health is now: " + playerHealth);
+    return playerHealth;
+}
+
+// --- AVAILABLE ACTIONS SYSTEM ---
+
+/**
+ * Returns the available choices for the current location
+ * @param {string} location - The current location
+ * @returns {string[]} Array of choice descriptions
+ */
+function getLocationChoices(location) {
+    switch(location) {
+        case "Miragem City":
+            return [
+                "Go to blacksmith",
+                "Head to the Upper Districts",
+                "Go straight to the tower the Prince is imprisoned in",
+                "Check inventory",
+                "Check status",
+                "Use item",
+                "Help",
+                "Exit game"
+            ];
+        case "Blacksmith":
+            return [
+                "Buy sword (" + sword.value + " coins)",
+                "Return to city",
+                "Check inventory",
+                "Check status",
+                "Use item",
+                "Help",
+                "Exit game"
+            ];
+        case "Upper Districts":
+            return [
+                "Buy potion (" + lifePotion.value + " coins)",
+                "Return to city",
+                "Check inventory",
+                "Check status",
+                "Use item",
+                "Help",
+                "Exit game"
+            ];
+    }
+}
+
+/**
+ * @returns {string} - Returns numbered options for location choices
+ */
+function printChoice() {
+        const choices = getLocationChoices(currentLocation);
+        console.log("\nWhat would you like to do?");
+        choices.forEach((c, i) => console.log((i + 1) + ". " + (c)));
+        return choices.length; // Return how many options we have
+}
+
 // --- MAIN GAME LOOP ---
+// Controls the flow of the game
 
 // Display the game title
-console.log("Welcome to Mystica: RELOAD");
+console.log("\nWelcome to Mystica: RELOAD");
 
 // Starting message
 console.log("Now entering uncharted territory...");
@@ -362,12 +552,15 @@ console.log("Now entering uncharted territory...");
 console.log("\nRei, was it? Nevermind, not important...");
 console.log("\nWelcome, Rei.");
 console.log("You start with " + playerCoin + " coins.");
-console.log("\nYour quest: rescue the Chained Prince of the Shadows from the tower he's been imprisoned in, and hope that in return he'll free you from the curse that binds your soul to this city.");
+console.log("\nYour quest: Rescue the Chained Prince of the Shadows from the tower he's been imprisoned in, and hope that in return he'll free you from the curse that binds your soul to this city.");
 
 while(gameRunning) {
     // Show current location and choices
     showLocation();
 
+    // Show options for current location
+    const maxChoice = printChoice();
+    
     // Get and validate player choice
     let validChoice = false;
     while(!validChoice) {
@@ -392,73 +585,21 @@ while(gameRunning) {
                 }
 
                 validChoice = true; // Valid choice made
-
-                if(choiceNum <= 3) {
-                    move(choiceNum);
-                } else if (choiceNum === 4) {
-                    displayInventory();
-                } else if(choiceNum === 5) {
-                    showStatus();
-                } else if(choiceNum === 6) {
-                    useItem();
-                } else if(choiceNum === 7) {
-                    showHelp();
-                } else if(choiceNum === 8) {
-                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
-                    gameRunning = false;
-                } else {
-                    console.log("\nInvalid choice. Please enter a number between 1 and 5.");
-                }
+                processChoice(choiceNum);
             } else if (currentLocation === "Blacksmith") {
                 if(choiceNum < 1 || choiceNum > 7) {
                     throw "Please enter a number between 1 and 7.";
                 }
 
                 validChoice = true;
-
-                if(choiceNum === 1) {
-                    buyFromBlacksmith();
-                } else if (choiceNum === 2) {
-                    move(choiceNum);
-                } else if(choiceNum === 3) {
-                    displayInventory();
-                } else if(choiceNum === 4) {
-                    showStatus();
-                } else if(choiceNum === 5) {
-                    useItem();
-                } else if(choiceNum === 6) {
-                    showHelp();
-                } else if(choiceNum === 7) {
-                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
-                    gameRunning = false;
-                } else {
-                    console.log("\nInvalid choice. Please enter a number between 1 and 3.");
-                }
+                processChoice(choiceNum);
             } else if(currentLocation === "Upper Districts") {
                 if(choiceNum < 1 || choiceNum > 7) {
                     throw "Please enter a number between 1 and 7.";
                 }
 
                 validChoice = true;
-
-                if(choiceNum === 1) {
-                    buyFromPotionShop();
-                } else if (choiceNum === 2) {
-                    move(choiceNum);
-                } else if(choiceNum === 3) {
-                    displayInventory();
-                } else if(choiceNum === 4) {
-                    showStatus();
-                } else if(choiceNum === 5) {
-                    useItem();
-                } else if(choiceNum === 6) {
-                    showHelp();
-                } else if(choiceNum === 7) {
-                    console.log("\nAre you sure you want to leave? Farewell, but you'll come back soon...");
-                    gameRunning = false;
-                } else {
-                    console.log("\nInvalid choice. Please enter a number between 1 and 3.");
-                }
+                processChoice(choiceNum);
             }
         } catch(error) {
             console.log("\nERROR: " + error);
