@@ -1,6 +1,6 @@
 ## ❗THIS IS THE TEXT-VERSION BETA FOR THE UPCOMING VISUAL NOVEL❗
 
-***Mystica: RELOAD*** is a **short text-based choose-your-own-adventure RPG demonic noir game** set in Miragem City, about a young woman called Rei on a quest to free the Chained Prince of the Shadows from the tower he's been imprisoned in, to get him to free _her_ from the curse that binds her soul to this city.
+***Cursed To Be Chained*** is a **short text-based choose-your-own-adventure RPG demonic noir game** set in Miragem City, about a young woman called Rei on a quest to free the Chained Prince of the Shadows from the tower he's been imprisoned in, to get him to free _her_ from the curse that binds her soul to this city.
 
 ◣━━━━━━━━━━━━━━━◢
 
@@ -19,17 +19,17 @@
 
 ## 🥀 WARNING 🥀
 TWs include:
-**descriptions of graphic death, blood, violence, disturbing scenes and demons.**
+**descriptions of blood, violence, disturbing scenes and demons.**
 ## ❗ BETA TESTING IS UNDERWAY! ❗
 Looking for beta testers to play the game!
 
 #### TO PLAY:
-1. Navigate to [toffeeangel/Mystica-RELOAD](https://github.com/toffeeangel/Mystica-RELOAD)
+1. Navigate to [toffeeangel/Cursed-To-Be-Chained](https://github.com/toffeeangel/Cursed-To-Be-Chained)
 2. Make sure you have Node.js installed.
 3. Above the list of files, click <> **Code**.
 4. Click **Download ZIP**.
-5. Extract the files from the ZIP to a new folder and open the file called **MysticaReload.js** in Visual Studio Code.
-6. Open a new terminal and run: **node MysticaReload.js**
+5. Extract the files from the ZIP to a new folder and open the file called **ctbc.js** in Visual Studio Code.
+6. Open a new terminal and run: **node ctbc.js**
 7. Start playing!
 
 ◣━━━━━━━━━━━━━━━◢
