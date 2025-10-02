@@ -1,5 +1,5 @@
-//Mystica: RELOAD
-//A short text-based choose-your-own-adventure RPG demonic noir game
+// Cursed To Be Chained
+// A short text-based choose-your-own-adventure RPG demonic noir game
 // Navigate the city, fight demons and rescue the Chained Prince of the Shadows in the hopes that he will free you from the curse that binds your soul to this city
 
 // Include readline for player input
@@ -543,7 +543,7 @@ function printChoice() {
 // Controls the flow of the game
 
 // Display the game title
-console.log("\nWelcome to Mystica: RELOAD");
+console.log("\nWelcome to Cursed To Be Chained");
 
 // Starting message
 console.log("Now entering uncharted territory...");
