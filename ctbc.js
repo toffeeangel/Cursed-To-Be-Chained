@@ -93,9 +93,9 @@ function showLocation() {
 // Shows status including health, coins and location
 function showStatus() {
     console.log("\n--- STATUS ---");
-    console.log("💀  Health: " + playerHealth);
-    console.log("🪙  Coins: " + playerCoin);
-    console.log("📍  Location: " + currentLocation);
+    console.log("?  Health: " + playerHealth);
+    console.log("?  Coins: " + playerCoin);
+    console.log("?  Location: " + currentLocation);
 }
 
 // --- COMBAT SYSTEM ---
@@ -153,6 +153,12 @@ function handleCombat(isBoss = false) {
                 console.log("\nThe demon lunges at you. You take " + (demonDamage - cross.effect) + " damage.");
                 updateHealth(-(demonDamage - cross.effect));
                 console.log("\nThe cross reduced the damage you took. You received " + cross.effect + " protection.");
+            } else if(hasItemType("Weapon")) {
+                console.log("\nDemon health: " + demonHealth);
+                console.log("You deal damage.");
+                demonHealth--;
+                console.log("\nThe demon lunges at you. You take " + demonDamage + " damage.");
+                updateHealth(-demonDamage);
             }
         }
 
@@ -336,7 +342,7 @@ function useItem() {
         console.log("\nYou drink the " + lifePotion.name + ".");
         console.log("\nNarrator: 'Full disclosure, I may or may not have poisoned it.'");
         console.log("\nYou: 'WHAT?! WHY?!'");
-        console.log("\nNarrator: 'Calm down. I said I 𝑚𝑎𝑦 or 𝑚𝑎𝑦 𝑛𝑜𝑡 have done something.'");
+        console.log("\nNarrator: 'Calm down. I said I ??? or ??? ??? have done something.'");
         updateHealth(lifePotion.effect);
         let potionIndex = inventory.indexOf("Life Potion");
         inventory.splice(potionIndex, 1);
@@ -431,35 +437,55 @@ function buyFromPotionShop() {
 
 // --- HELP SYSTEM ---
 
+let helpCount = 0;
+
 // Shows all available game commands and how to use them
 function showHelp() {
-    console.log("\nNarrator: 'Help? Holy Beelzebub, you really are useless...'");
-    console.log("\n--- HELP ---");
 
-    console.log("\nMovement Commands:");
-    console.log("- In Miragem City, choose 1-3 to travel to different locations");
-    console.log("- In other locations, choose the return option to go back to Miragem City");
+    if(helpCount === 10) {
+        console.log("\nNarrator: 'That's it. I've had just about enough of you, you little-' *g͔̯l̊ì̢t̚ĉh͖es̐̈́*");
+        console.log("Narrator: 'HELL-'");
+        console.log("The Narrator starts glitching out and distorting, and everything around you starts to melt.");
+        updateHealth(-100);
+    } else {
+        console.log("\nNarrator: 'Help? Holy Beelzebub, you really are useless...'");
+        console.log("\n--- HELP ---");
 
-    console.log("\nBattle Information:");
-    console.log("\nNarrator: '... Why don't we go to the Undergrounds and find out?'");
+        console.log("\nMovement Commands:");
+        console.log("- In Miragem City, choose 1-3 to travel to different locations");
+        console.log("- In other locations, choose the return option to go back to Miragem City");
 
-    console.log("\nItem usage:");
-    console.log("- Life Potions restore 30 health");
-    console.log("- You can buy Life Potions at the shop in the Upper Districts for 5 coins");
-    console.log("- You can buy a sword at the blacksmith for 10 coins");
+        console.log("\nBattle Information:");
+        console.log("\nNarrator: '... Why don't we go to the Undergrounds and find out?'");
 
-    console.log("\nOther commands:");
-    console.log("- Choose the status option to see your current location, health and coins");
-    console.log("- Choose the help option to see this message again");
-    console.log("- Choose the exit option to end the game");
+        console.log("\nItem usage:");
+        console.log("- Life Potions restore 30 health");
+        console.log("- You can buy Life Potions at the shop in the Upper Districts for 5 coins");
+        console.log("- You can buy a sword at the blacksmith for 10 coins");
 
-    console.log("\nTips:");
-    console.log("- Keep healing potions for dangerous areas");
-    console.log("- Defeat demons to earn coins");
-    console.log("- Don't get too comfortable around the narrator...");
+        console.log("\nOther commands:");
+        console.log("- Choose the status option to see your current location, health and coins");
+        console.log("- Choose the help option to see this message again");
+        console.log("- Choose the exit option to end the game");
 
-    console.log("\nNarrator: 'And look, if you ever need help... don't ask me.'");
-    console.log("You: '...'");
+        console.log("\nTips:");
+        console.log("- Keep healing potions for dangerous areas");
+        console.log("- Defeat demons to earn coins");
+        console.log("- Don't get too comfortable around the narrator...");
+
+        console.log("\nNarrator: 'And look, if you ever need help... don't ask me.'");
+        console.log("You: '...'");
+
+        helpCount++;
+    }
+
+    if(helpCount === 8) {
+        console.log("\nNarrator: 'Stop calling the help function.'");
+    }
+
+    if(helpCount === 9) {
+        console.log("\nNarrator: 'I said STOP-'");
+    }
 }
 
 // --- INPUT VALIDATION AND GAME LIMITS ---
